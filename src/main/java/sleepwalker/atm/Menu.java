@@ -1,13 +1,5 @@
 package sleepwalker.atm;
 
-public class Menu {
-
-    private Users users;
-
-    public void start(){
-
-    }
-    public void logIn(){
-
-    }
+public interface Menu {
+    void start(ATM atm);
 }
