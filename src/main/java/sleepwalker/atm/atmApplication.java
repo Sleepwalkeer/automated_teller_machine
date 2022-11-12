@@ -4,6 +4,6 @@ import java.math.BigDecimal;
 
 public class atmApplication {
     public static void main(String[] args) {
-        new ATM(BigDecimal.valueOf(500_000)).run();
+        new ATM(BigDecimal.valueOf(500_000), new AccountDataFileStorage()).run();
     }
 }

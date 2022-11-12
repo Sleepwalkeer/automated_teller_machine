@@ -1,8 +1,8 @@
 package sleepwalker.atm;
 
-import java.util.List;
+import java.util.Map;
 
 public interface AccountDataStorage {
-    List<Account> readAccountData();
-    void saveAccountData(List<Account> userData);
+    Map<String, Account> readData();
+    void saveData(Session session);
 }

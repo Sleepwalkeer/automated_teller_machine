@@ -1,40 +1,28 @@
 package sleepwalker.atm;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 public class ATM {
 
     //TODO Надо грамотно расставить методы ВЕЗДЕ
     private final static BigDecimal DEPOSIT_LIMIT = BigDecimal.valueOf(1_000_000);
-    private final Menu menu;
-    private final AccountDataStorage dataStorage;
     private BigDecimal atmCashAmount;
-    private List<Account> accountList;
+    private final Menu menu;
+    private final Session session;
 
-    public ATM(BigDecimal atmCashAmount) {
-        dataStorage = new AccountDataFileStorage();
+    public ATM(BigDecimal atmCashAmount, AccountDataStorage dataStorage) {
         this.atmCashAmount = atmCashAmount;
-        accountList = getData();
+        session = new Session(dataStorage);
         menu = new ConsoleMenu();
     }
 
     public void run() {
-        menu.start(this);
-    }
-
-
-    public void saveData(List<Account> users) { //ТУТ НАДО БУДЕТ МЕНЯТЬ
-        dataStorage.saveAccountData(users);
-    }
-
-
-    private List<Account> getData() {
-        return dataStorage.readAccountData();
+        menu.start(this, session);
     }
 
     public void withdraw(Account card, BigDecimal withdrawalAmount) {
         BigDecimal balance = card.getBalance();
+
         if (withdrawalApproved(balance, withdrawalAmount)) {
             BigDecimal newBalance = balance.subtract(withdrawalAmount);
             card.setBalance(newBalance);
@@ -43,39 +31,39 @@ public class ATM {
             this.setAtmCashAmount(newAtmCashAmount);
         }
     }
-
-    public void deposit(Account card, BigDecimal depositAmount) {
-        BigDecimal balance = card.getBalance();
+    public void deposit(Account account, BigDecimal depositAmount) {
+        BigDecimal balance = account.getBalance();
         if (depositApproved(depositAmount)) {
             BigDecimal newBalance = balance.add(depositAmount);
-            card.setBalance(newBalance);
+            account.setBalance(newBalance);
 
             BigDecimal newAtmCashAmount = this.getAtmCashAmount().add(depositAmount);
             this.setAtmCashAmount(newAtmCashAmount);
         }
     }
-
-    public BigDecimal checkBalance(Account card){
-        return card.getBalance();
+    public BigDecimal getBalance(Account account) {
+        return account.getBalance();
     }
 
-    private boolean depositApproved(BigDecimal depositAmount){              //СКОРЕЕ ВСЕГО НУЖНЫ СВОИ ИСКЛЮЧЕНИЯ
+    private boolean depositApproved(BigDecimal depositAmount) {              //СКОРЕЕ ВСЕГО НУЖНЫ СВОИ ИСКЛЮЧЕНИЯ
         return depositAmount.compareTo(BigDecimal.ZERO) > 0 &&
                 depositAmount.compareTo(DEPOSIT_LIMIT) < 0;
     }
-
     private boolean withdrawalApproved(BigDecimal balance, BigDecimal withdrawalAmount) { //СКОРЕЕ ВСЕГО НУЖНЫ СВОИ ИСКЛЮЧЕНИЯ
-        return  withdrawalAmount.compareTo(this.getAtmCashAmount()) < 0 &&
+        return withdrawalAmount.compareTo(this.getAtmCashAmount()) < 0 &&
                 withdrawalAmount.compareTo(BigDecimal.ZERO) > 0 &&
                 balance.compareTo(withdrawalAmount) > 0;
     }
-
     private BigDecimal getAtmCashAmount() {
         return atmCashAmount;
     }
-
     private void setAtmCashAmount(BigDecimal atmCashAmount) {
         this.atmCashAmount = atmCashAmount;
     }
 
+
+
+
 }
+
+
