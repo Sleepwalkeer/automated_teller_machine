@@ -1,5 +1,7 @@
 package sleepwalker.atm;
 
+import sleepwalker.exception.*;
+
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Scanner;
@@ -9,8 +11,7 @@ public class ConsoleMenu implements Menu {
     private Session currentSession;
     private final static Scanner scanner = new Scanner(System.in);
     private final static DecimalFormat MONEY = new DecimalFormat("$#,###.00");
-    private final static BigDecimal INCORRECT_DECIMAL_INPUT = BigDecimal.ZERO;
-    private final static String INCORRECT_AMOUNT_INPUT = "Error! Incorrect amount";
+    private final static String INCORRECT_AMOUNT_INPUT = "Incorrect amount entered";
 
     @Override
     public void start(ATM atm, Session session) {
@@ -67,25 +68,32 @@ public class ConsoleMenu implements Menu {
         System.out.println("Your balance = " + MONEY.format(atm.getBalance(currentSession.getCurrentAccount())));
     }
     private void depositActionHandler() {
-        System.out.println("Please, enter the amount to deposit");
-        BigDecimal depositAmount = readBigDecimal();
-        if (depositAmount.compareTo(INCORRECT_DECIMAL_INPUT) > 0) {
+        System.out.println("Please, enter deposit amount");
+        try{
+            BigDecimal depositAmount = readBigDecimal();
             atm.deposit(currentSession.getCurrentAccount(), depositAmount);
-            System.out.println(MONEY.format(depositAmount) + " has been successfully deposited");
-        } else {
+            System.out.println(MONEY.format(depositAmount) + " has been successfully deposited to your account");
+        }
+        catch (IncorrectAmountEnteredException e){
             System.out.println(INCORRECT_AMOUNT_INPUT);
+        }
+        catch (DepositLimitExceededException e){
+            System.out.println("Deposit amount cannot exceed $1,000,000.00");
         }
     }
 
     private void withdrawActionHandler() {
-        System.out.println("Please, enter the amount to withdraw");
-
-        BigDecimal withdrawalAmount = readBigDecimal();
-        if (withdrawalAmount.compareTo(INCORRECT_DECIMAL_INPUT) > 0) {
+        System.out.println("Please, enter withdrawal amount");
+        try {
+            BigDecimal withdrawalAmount = readBigDecimal();
             atm.withdraw(currentSession.getCurrentAccount(), withdrawalAmount);
-            System.out.println(MONEY.format(withdrawalAmount) + " has been successfully withdrawn");
-        } else {
+            System.out.println(MONEY.format(withdrawalAmount) + " has been successfully withdrawn from your account");
+        } catch (IncorrectAmountEnteredException e) {
             System.out.println(INCORRECT_AMOUNT_INPUT);
+        } catch (InsufficientBalanceException e) {
+            System.out.println("You have insufficient funds");
+        } catch (atmNotEnoughMoneyException e) {
+            System.out.println("There is not enough money in the ATM to fulfill your request");
         }
     }
 
@@ -109,11 +117,11 @@ public class ConsoleMenu implements Menu {
         return action;
     }
 
-    private BigDecimal readBigDecimal() {
+    private BigDecimal readBigDecimal() throws IncorrectAmountEnteredException {
         try {
             return new BigDecimal(scanner.nextLine().replace(',', '.'));
         } catch (NumberFormatException e) {
-            return INCORRECT_DECIMAL_INPUT;
+            throw  new IncorrectAmountEnteredException();
         }
     }
 

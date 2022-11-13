@@ -1,5 +1,6 @@
 package sleepwalker.atm;
 
+import sleepwalker.exception.*;
 import java.math.BigDecimal;
 
 public class ATM {
@@ -8,19 +9,18 @@ public class ATM {
     private final static BigDecimal DEPOSIT_LIMIT = BigDecimal.valueOf(1_000_000);
     private BigDecimal atmCashAmount;
     private final Menu menu;
-    private final Session session;
 
-    public ATM(BigDecimal atmCashAmount, AccountDataStorage dataStorage) {
+    public ATM(BigDecimal atmCashAmount) {
         this.atmCashAmount = atmCashAmount;
-        session = new Session(dataStorage);
         menu = new ConsoleMenu();
     }
 
-    public void run() {
-        menu.start(this, session);
+    public void run(AccountDataStorage dataStorage) {
+        menu.start(this, new Session(dataStorage));
     }
 
-    public void withdraw(Account card, BigDecimal withdrawalAmount) {
+    public void withdraw(Account card, BigDecimal withdrawalAmount)
+            throws atmNotEnoughMoneyException, IncorrectAmountEnteredException, InsufficientBalanceException {
         BigDecimal balance = card.getBalance();
 
         if (withdrawalApproved(balance, withdrawalAmount)) {
@@ -31,37 +31,54 @@ public class ATM {
             this.setAtmCashAmount(newAtmCashAmount);
         }
     }
-    public void deposit(Account account, BigDecimal depositAmount) {
-        BigDecimal balance = account.getBalance();
+
+    public void deposit(Account account, BigDecimal depositAmount)
+            throws IncorrectAmountEnteredException, DepositLimitExceededException {
         if (depositApproved(depositAmount)) {
-            BigDecimal newBalance = balance.add(depositAmount);
+            BigDecimal newBalance = account.getBalance().add(depositAmount);
             account.setBalance(newBalance);
 
             BigDecimal newAtmCashAmount = this.getAtmCashAmount().add(depositAmount);
             this.setAtmCashAmount(newAtmCashAmount);
         }
     }
+
     public BigDecimal getBalance(Account account) {
         return account.getBalance();
     }
 
-    private boolean depositApproved(BigDecimal depositAmount) {              //СКОРЕЕ ВСЕГО НУЖНЫ СВОИ ИСКЛЮЧЕНИЯ
-        return depositAmount.compareTo(BigDecimal.ZERO) > 0 &&
-                depositAmount.compareTo(DEPOSIT_LIMIT) < 0;
+
+    private boolean depositApproved(BigDecimal depositAmount)
+            throws IncorrectAmountEnteredException, DepositLimitExceededException {
+        if (depositAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IncorrectAmountEnteredException();
+        } else if (depositAmount.compareTo(DEPOSIT_LIMIT) > 0) {
+            throw new DepositLimitExceededException();
+        } else {
+            return true;
+        }
     }
-    private boolean withdrawalApproved(BigDecimal balance, BigDecimal withdrawalAmount) { //СКОРЕЕ ВСЕГО НУЖНЫ СВОИ ИСКЛЮЧЕНИЯ
-        return withdrawalAmount.compareTo(this.getAtmCashAmount()) < 0 &&
-                withdrawalAmount.compareTo(BigDecimal.ZERO) > 0 &&
-                balance.compareTo(withdrawalAmount) > 0;
+
+    private boolean withdrawalApproved(BigDecimal balance, BigDecimal withdrawalAmount)
+            throws atmNotEnoughMoneyException, IncorrectAmountEnteredException, InsufficientBalanceException {
+        if (withdrawalAmount.compareTo(this.getAtmCashAmount()) > 0) {
+            throw new atmNotEnoughMoneyException();
+        } else if (withdrawalAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IncorrectAmountEnteredException();
+        } else if (balance.compareTo(withdrawalAmount) < 0) {
+            throw new InsufficientBalanceException();
+        } else {
+            return true;
+        }
     }
+
     private BigDecimal getAtmCashAmount() {
         return atmCashAmount;
     }
+
     private void setAtmCashAmount(BigDecimal atmCashAmount) {
         this.atmCashAmount = atmCashAmount;
     }
-
-
 
 
 }
