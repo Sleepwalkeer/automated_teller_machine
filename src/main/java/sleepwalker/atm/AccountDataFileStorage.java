@@ -17,7 +17,7 @@ public class AccountDataFileStorage implements AccountDataStorage {
 
         try (Stream<String> lines = Files.lines(FILE_PATH)) {
             lines.forEach(s -> addEntry(s, accounts));
-        } catch (Exception e) { // РАСПИШИ ИСКЛЮЧЕНИЯ ЛУЧШЕ
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return accounts;

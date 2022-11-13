@@ -19,7 +19,6 @@ public class ConsoleMenu implements Menu {
         this.currentSession = session;
         authorize();
     }
-
     private void authorize() {
         while (!currentSession.isLoggedIn()) {
         currentSession.reset();
@@ -42,7 +41,6 @@ public class ConsoleMenu implements Menu {
             }
         }
     }
-
     private boolean tryLogIn(String cardNumber) {
         while (currentSession.getPinCodeAttempts() < Session.MAX_PIN_CODE_ENTER_ATTEMPTS) {
             System.out.println("Please, enter your PIN code:");
@@ -58,13 +56,11 @@ public class ConsoleMenu implements Menu {
         blockAccountAction(cardNumber);
         return false;
     }
-
     private void blockAccountAction(String cardNumber) {
         currentSession.blockAccount(cardNumber);
         System.out.println("Your account has been blocked for 24 hours.");
         System.out.println();
     }
-
     private void showHomeScreen() {
         System.out.println();
         System.out.println("You have been successfully logged in");
@@ -80,7 +76,6 @@ public class ConsoleMenu implements Menu {
             }
         }
     }
-
     private void showActionsAvailable() {
         System.out.println();
         System.out.println("Please, enter the number corresponding to the desired action:");
@@ -90,11 +85,9 @@ public class ConsoleMenu implements Menu {
         System.out.println("4 - Log Out");
         System.out.println("5 - Exit ");
     }
-
     private void checkBalanceActionHandler() {
         System.out.println("Your balance = " + MONEY.format(atm.getBalance(currentSession.getCurrentAccount())));
     }
-
     private void depositActionHandler() {
         System.out.println("Please, enter deposit amount");
         try {
@@ -107,7 +100,6 @@ public class ConsoleMenu implements Menu {
             System.out.println("Deposit amount cannot exceed $1,000,000.00");
         }
     }
-
     private void withdrawActionHandler() {
         System.out.println("Please, enter withdrawal amount");
         try {
@@ -122,17 +114,14 @@ public class ConsoleMenu implements Menu {
             System.out.println("There is not enough money in the ATM to fulfill your request");
         }
     }
-
     private void logOutActionHandler() {
         currentSession.logOut();
         authorize();
     }
-
     private void exitActionHandler() {
         System.out.println("thank you for using our bank's services");
         currentSession.exit();
     }
-
     private BankAction readNextAction() {
         BankAction action;
         try {
@@ -143,7 +132,6 @@ public class ConsoleMenu implements Menu {
         }
         return action;
     }
-
     private BigDecimal readBigDecimal() throws IncorrectAmountEnteredException {
         try {
             return new BigDecimal(scanner.nextLine().replace(',', '.'));

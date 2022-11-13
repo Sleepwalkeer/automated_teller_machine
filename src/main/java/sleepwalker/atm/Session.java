@@ -67,7 +67,7 @@ public class Session {
 
 
     public void validateCardNumber(String cardNumberToVerify)
-            throws AccountBlockedException, AccountNotFoundException { //СКОРЕЕ ВСЕГО НАДО БУДЕТ МЕНЯТЬ ФОРМАТ ВВОДА
+            throws AccountBlockedException, AccountNotFoundException {
         for (Map.Entry<String, Account> accountEntry : accountData.entrySet()) {
             String cardNumber = accountEntry.getKey().replace("-", "");
             if (cardNumberToVerify.equals(cardNumber)) {
