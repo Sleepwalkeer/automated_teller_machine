@@ -19,26 +19,52 @@ public class ConsoleMenu implements Menu {
         this.currentSession = session;
         authorize();
     }
+
     private void authorize() {
         while (!currentSession.isLoggedIn()) {
+        currentSession.reset();
             System.out.println("Welcome to the ATM app.");
-            System.out.print("Please, enter your card number:");
+            System.out.println("Please, enter your card number:");
             String cardNumberEntered = scanner.nextLine();
-            if (currentSession.cardNumberValid(cardNumberEntered)) {
-                System.out.print("Please, enter your PIN code:");
-                String pinCodeEntered = scanner.nextLine();
-                if (currentSession.logIn(cardNumberEntered, pinCodeEntered)) {
+            try {
+                currentSession.validateCardNumber(cardNumberEntered);
+                if (tryLogIn(cardNumberEntered)) {
                     showHomeScreen();
-                } else {
-                    System.out.println("The PIN code you have entered is invalid.");
-                    System.out.println();
                 }
-            } else {
-                System.out.println("The card number you have entered is invalid.");
+            } catch (AccountBlockedException e) {
+                long hoursToUnban = e.timeToUnban()/Session.HOUR;
+                System.out.println("This account has been blocked and will be unblocked in " + hoursToUnban + " hours");
+                System.out.println();
+
+            } catch (AccountNotFoundException e) {
+                System.out.println("The card number you have entered is invalid");
                 System.out.println();
             }
         }
     }
+
+    private boolean tryLogIn(String cardNumber) {
+        while (currentSession.getPinCodeAttempts() < Session.MAX_PIN_CODE_ENTER_ATTEMPTS) {
+            System.out.println("Please, enter your PIN code:");
+            String pinCodeEntered = scanner.nextLine();
+            if (currentSession.logIn(cardNumber, pinCodeEntered)) {
+                return true;
+            } else {
+                currentSession.increasePinCodeAttempts();
+                byte attemptsLeft = (byte) (Session.MAX_PIN_CODE_ENTER_ATTEMPTS - currentSession.getPinCodeAttempts());
+                System.out.println("Incorrect PIN code, you have " + attemptsLeft + " more attempts left");
+            }
+        }
+        blockAccountAction(cardNumber);
+        return false;
+    }
+
+    private void blockAccountAction(String cardNumber) {
+        currentSession.blockAccount(cardNumber);
+        System.out.println("Your account has been blocked for 24 hours.");
+        System.out.println();
+    }
+
     private void showHomeScreen() {
         System.out.println();
         System.out.println("You have been successfully logged in");
@@ -64,20 +90,20 @@ public class ConsoleMenu implements Menu {
         System.out.println("4 - Log Out");
         System.out.println("5 - Exit ");
     }
+
     private void checkBalanceActionHandler() {
         System.out.println("Your balance = " + MONEY.format(atm.getBalance(currentSession.getCurrentAccount())));
     }
+
     private void depositActionHandler() {
         System.out.println("Please, enter deposit amount");
-        try{
+        try {
             BigDecimal depositAmount = readBigDecimal();
             atm.deposit(currentSession.getCurrentAccount(), depositAmount);
             System.out.println(MONEY.format(depositAmount) + " has been successfully deposited to your account");
-        }
-        catch (IncorrectAmountEnteredException e){
+        } catch (IncorrectAmountEnteredException e) {
             System.out.println(INCORRECT_AMOUNT_INPUT);
-        }
-        catch (DepositLimitExceededException e){
+        } catch (DepositLimitExceededException e) {
             System.out.println("Deposit amount cannot exceed $1,000,000.00");
         }
     }
@@ -103,6 +129,7 @@ public class ConsoleMenu implements Menu {
     }
 
     private void exitActionHandler() {
+        System.out.println("thank you for using our bank's services");
         currentSession.exit();
     }
 
@@ -121,8 +148,7 @@ public class ConsoleMenu implements Menu {
         try {
             return new BigDecimal(scanner.nextLine().replace(',', '.'));
         } catch (NumberFormatException e) {
-            throw  new IncorrectAmountEnteredException();
+            throw new IncorrectAmountEnteredException();
         }
     }
-
 }

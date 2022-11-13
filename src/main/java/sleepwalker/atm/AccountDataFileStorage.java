@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 public class AccountDataFileStorage implements AccountDataStorage {
 
     final static Path FILE_PATH = Path.of("src/main/resources/userData.txt");
-    final static String DELIMITER = " ";
+    final static String SPACE = " ";
 
     @Override
     public Map<String, Account> readData() {
@@ -21,14 +21,17 @@ public class AccountDataFileStorage implements AccountDataStorage {
             e.printStackTrace();
         }
         return accounts;
+
     }
 
     private void addEntry(String line, Map<String, Account> accounts) {
-        String[] currentAccountData = line.split(DELIMITER);
+        String[] currentAccountData = line.split(SPACE);
         String cardNumber = currentAccountData[0];
         String PIN = currentAccountData[1];
         BigDecimal balance = new BigDecimal(currentAccountData[2]);
-        accounts.put(cardNumber, new Account(cardNumber, PIN, balance));
+        boolean blocked = Boolean.parseBoolean(currentAccountData[3]);
+        Date unblockDate = new Date(Long.parseLong(currentAccountData[4]));
+        accounts.put(cardNumber, new Account(cardNumber, PIN, balance, blocked, unblockDate));
     }
 
     @Override
@@ -38,7 +41,9 @@ public class AccountDataFileStorage implements AccountDataStorage {
                 String cardNumber = accountEntry.getValue().getCardNumber();
                 String PIN = String.valueOf(accountEntry.getValue().getPIN());
                 String Balance = accountEntry.getValue().getBalance().toString();
-                output.write(cardNumber + DELIMITER + PIN + DELIMITER + Balance + "\n");
+                boolean blocked = accountEntry.getValue().isBlocked();
+                long unblockDate = accountEntry.getValue().getUnblockDate().getTime();
+                output.write(cardNumber + SPACE + PIN + SPACE + Balance + SPACE + blocked + SPACE + unblockDate + "\n");
             }
         } catch (IOException e) {
             e.printStackTrace();
