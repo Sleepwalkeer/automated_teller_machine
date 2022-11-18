@@ -11,7 +11,6 @@ public class Account {
     private Date unblockDate;
 
 
-
     public Account(String cardNumber, String PIN, BigDecimal balance, boolean blocked, Date unblockDate) {
         this.cardNumber = cardNumber;
         this.PIN = PIN;
@@ -35,6 +34,7 @@ public class Account {
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
+
     public boolean isBlocked() {
         return blocked;
     }
@@ -42,12 +42,12 @@ public class Account {
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
     }
+
     public Date getUnblockDate() {
         return unblockDate;
     }
-    public void setUnblockDate(Date unblockDate){
+
+    public void setUnblockDate(Date unblockDate) {
         this.unblockDate = unblockDate;
     }
-
-
 }
