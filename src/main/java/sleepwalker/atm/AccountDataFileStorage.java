@@ -8,8 +8,8 @@ import java.util.stream.Stream;
 
 public class AccountDataFileStorage implements AccountDataStorage {
 
-    final static Path FILE_PATH = Path.of("src/main/resources/userData.txt");
-    final static String SPACE = " ";
+    private final static Path FILE_PATH = Path.of("src/main/resources/userData.txt");
+    private final static String SPACE = " ";
 
     @Override
     public Map<String, Account> readData() {
@@ -21,7 +21,6 @@ public class AccountDataFileStorage implements AccountDataStorage {
             e.printStackTrace();
         }
         return accounts;
-
     }
 
     private void addEntry(String line, Map<String, Account> accounts) {
@@ -37,9 +36,9 @@ public class AccountDataFileStorage implements AccountDataStorage {
     @Override
     public void saveData(Session session) {
         try (BufferedWriter output = new BufferedWriter(new FileWriter(FILE_PATH.toFile()))) {
-            for (Map.Entry<String, Account> accountEntry : session.getAccountData().entrySet()) {
+            for (Map.Entry<String, Account> accountEntry : session.getAccounts().entrySet()) {
                 String cardNumber = accountEntry.getValue().getCardNumber();
-                String PIN = String.valueOf(accountEntry.getValue().getPIN());
+                String PIN = accountEntry.getValue().getPIN();
                 String Balance = accountEntry.getValue().getBalance().toString();
                 boolean blocked = accountEntry.getValue().isBlocked();
                 long unblockDate = accountEntry.getValue().getUnblockDate().getTime();
