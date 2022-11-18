@@ -36,7 +36,7 @@ public class ATM {
             BigDecimal newBalance = account.getBalance().add(depositAmount);
             account.setBalance(newBalance);
 
-            atmCashAmount = atmCashAmount.subtract(depositAmount);
+            atmCashAmount = atmCashAmount.add(depositAmount);
         }
     }
 
