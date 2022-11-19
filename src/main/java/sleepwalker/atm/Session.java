@@ -41,7 +41,7 @@ public class Session {
         return currentAccount;
     }
 
-    public void saveData(Session session) { //ТУТ НАДО БУДЕТ МЕНЯТЬ
+    public void saveData(Session session) {
         accounts.put(currentAccount.getCardNumber(), currentAccount);
         dataStorage.saveData(session);
     }
